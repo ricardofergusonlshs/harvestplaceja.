@@ -23,10 +23,9 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
 
-        // Force a new Google Play version.
-        // Version code must increase every time you upload a new AAB.
-        versionCode = 2
-        versionName = "1.0.1"
+        // Google Play requires this number to increase every time you upload a new AAB.
+        versionCode = 3
+        versionName = "1.0.2"
     }
 
     val cmKeystorePath = System.getenv("CM_KEYSTORE_PATH")
