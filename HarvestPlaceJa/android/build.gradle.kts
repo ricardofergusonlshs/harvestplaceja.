@@ -23,7 +23,7 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
 
-        // Google Play requires this number to increase every time you upload a new AAB.
+        // Google Play requires this to increase for every new upload.
         versionCode = 3
         versionName = "1.0.2"
     }
