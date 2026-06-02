@@ -1,14 +1,13 @@
 plugins {
-    id("com.theharvestplaceja.app")
+    id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.theharvestplaceja.app"
+    namespace = "com.harvestplaceja.myapp"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -20,16 +19,44 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.farm"
+        applicationId = "com.harvestplaceja.myapp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    val cmKeystorePath = System.getenv("CM_KEYSTORE_PATH")
+    val cmKeystorePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+    val cmKeyAlias = System.getenv("CM_KEY_ALIAS")
+    val cmKeyPassword = System.getenv("CM_KEY_PASSWORD")
+
+    val hasCodemagicSigning =
+        !cmKeystorePath.isNullOrBlank() &&
+        !cmKeystorePassword.isNullOrBlank() &&
+        !cmKeyAlias.isNullOrBlank() &&
+        !cmKeyPassword.isNullOrBlank()
+
+    signingConfigs {
+        create("release") {
+            if (hasCodemagicSigning) {
+                storeFile = file(cmKeystorePath!!)
+                storePassword = cmKeystorePassword
+                keyAlias = cmKeyAlias
+                keyPassword = cmKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            if (hasCodemagicSigning) {
+                println("Using Codemagic release signing config.")
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                println("Codemagic release signing variables missing. Falling back to debug signing for local/test build only.")
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 }
