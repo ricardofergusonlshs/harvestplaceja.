@@ -1,15 +1,13 @@
-writing{variant="standard" id="51843"}
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.farm"
+    namespace = "com.harvestplaceja.myapp"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -21,21 +19,44 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.farm"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "com.harvestplaceja.myapp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    val cmKeystorePath = System.getenv("CM_KEYSTORE_PATH")
+    val cmKeystorePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+    val cmKeyAlias = System.getenv("CM_KEY_ALIAS")
+    val cmKeyPassword = System.getenv("CM_KEY_PASSWORD")
+
+    val hasCodemagicSigning =
+        !cmKeystorePath.isNullOrBlank() &&
+        !cmKeystorePassword.isNullOrBlank() &&
+        !cmKeyAlias.isNullOrBlank() &&
+        !cmKeyPassword.isNullOrBlank()
+
+    signingConfigs {
+        create("release") {
+            if (hasCodemagicSigning) {
+                storeFile = file(cmKeystorePath!!)
+                storePassword = cmKeystorePassword
+                keyAlias = cmKeyAlias
+                keyPassword = cmKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (hasCodemagicSigning) {
+                println("Using Codemagic release signing config.")
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                println("Codemagic release signing variables missing. Falling back to debug signing for local/test build only.")
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 }
